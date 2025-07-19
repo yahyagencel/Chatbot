@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gelişmiş Chatbot</title>
+<!-- Base64 Favicon -->
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAADJViUEAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAq0lEQVQoka2SsQ2DMAxF31aACqAFqIBnIAekAFpACkABagAlSAHSgA6gAygAaP8ZuRUU23RjUXAqvH7ZVtFfBCWq8Ch6g2kBQzwgVgM9yOMI5Ff0e6CktniGWJGb9UPBBd7pATUUIUwHkU7YprU+y1UvD4Z9k2UFiTbYuWwEvVq3FA7KnFAnqx9RuYI1ibv4FnxMGaOmnyZ9pQAAAABJRU5ErkJggg==" />
+
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background: #0b0f18;
+    color: #eee;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+
+  h1 {
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  #chat {
+    max-width: 600px;
+    margin: auto;
+    height: 400px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+  }
+
+  .message {
+    margin: 10px 0;
+    padding: 8px 12px;
+    border-radius: 10px;
+    max-width: 80%;
+    position: relative;
+  }
+
+  .user {
+    background: #4caf50;
+    color: #fff;
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .bot {
+    background: #2196f3;
+    color: #fff;
+    margin-right: auto;
+    text-align: left;
+  }
+
+  .timestamp {
+    font-size: 10px;
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+
+  #input {
+    max-width: 600px;
+    margin: 20px auto;
+    display: flex;
+    gap: 10px;
+  }
+
+  input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    background: #4caf50;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  button:hover {
+    background: #45a049;
+  }
+
+  #clearBtn {
+    background: #f44336;
+  }
+
+  #clearBtn:hover {
+    background: #d32f2f;
+  }
+
+  .fadeIn {
+    animation: fadeInAnim 0.4s ease forwards;
+  }
+
+  @keyframes fadeInAnim {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<h1>🌌 Gece Temalı Gelişmiş Chatbot</h1>
+
+<div id="chat"></div>
+
+<div id="input">
+  <input id="messageInput" type="text" placeholder="Mesajını yaz..." autocomplete="off" />
+  <button onclick="sendMessage()">Gönder</button>
+  <button id="clearBtn" onclick="clearChat()">Temizle</button>
+</div>
+
+<script>
+  // Arka plan yıldız animasyonu
+  const canvas = document.getElementById("stars");
+  const ctx = canvas.getContext("2d");
+  let stars = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function createStars(count) {
+    stars = [];
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.5,
+        d: Math.random() * 1
+      });
+    }
+  }
+
+  function drawStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.shadowBlur = 2;
+    ctx.shadowColor = "#fff";
+    for (let s of stars) {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2, true);
+      ctx.fill();
+    }
+    moveStars();
+  }
+
+  function moveStars() {
+    for (let s of stars) {
+      s.y += s.d;
+      if (s.y > canvas.height) {
+        s.y = 0;
+        s.x = Math.random() * canvas.width;
+      }
+    }
+  }
+
+  function animateStars() {
+    drawStars();
+    requestAnimationFrame(animateStars);
+  }
+
+  window.addEventListener("resize", () => {
+    resizeCanvas();
+    createStars(150);
+  });
+
+  resizeCanvas();
+  createStars(150);
+  animateStars();
+</script>
+
+<script>
+  const chat = document.getElementById("chat");
+  const input = document.getElementById("messageInput");
+
+  function getTime() {
+    const now = new Date();
+    return now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  }
+
+  function appendMessage(sender, text) {
+    const div = document.createElement("div");
+    div.className = "message " + sender + " fadeIn";
+
+    const msgText = document.createElement("div");
+    msgText.textContent = text;
+    div.appendChild(msgText);
+
+    const time = document.createElement("div");
+    time.className = "timestamp";
+    time.textContent = getTime();
+    div.appendChild(time);
+
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function getBotReply(message) {
+    const normalized = message.toLowerCase().trim();
+
+    const responses = {
+      greetings: ["Merhaba! Size nasıl yardımcı olabilirim?", "Selam! Nasılsın?", "Hey, hoş geldin!"],
+      howAreYou: ["İyiyim, teşekkürler! Sen nasılsın?", "Harikayım, seninle konuşmak güzel!", "Gayet iyiyim! Sen?"],
+      thanks: ["Rica ederim! Yardımcı olabildiysem ne mutlu.", "Her zaman buradayım!", "Ne demek, her zaman!"],
+      joke: ["Neden bilgisayar gözlük takar? Çünkü çok fazla WINDOWS açıyor!", "HTML neden yalnız kalmış? Çünkü kendini <div>’lere kapatmış! 😄"],
+      bye: ["Görüşürüz! Tekrar beklerim.", "Hoşça kal!", "Kendine iyi bak!"]
+    };
+
+    if (["merhaba", "selam", "hey", "hi"].some(w => normalized.includes(w))) return random(responses.greetings);
+    if (["nasılsın", "naber"].some(w => normalized.includes(w))) return random(responses.howAreYou);
+    if (["teşekkür", "sağol", "thanks", "mersi"].some(w => normalized.includes(w))) return random(responses.thanks);
+    if (normalized.includes("fıkra") || normalized.includes("şaka")) return random(responses.joke);
+    if (["görüşürüz", "bay", "bye", "hoşça kal"].some(w => normalized.includes(w))) return random(responses.bye);
+    if (normalized.includes("hava")) return "Bugün hava yıldızlı görünüyor! 🌟";
+
+    return "Üzgünüm, bunu anlayamadım. Daha açık yazabilir misin?";
+  }
+
+  function random(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function sendMessage() {
+    const message = input.value.trim();
+    if (!message) return;
+    appendMessage("user", message);
+    input.value = "";
+    input.disabled = true;
+
+    appendMessage("bot", "Bot düşünüyor...");
+
+    setTimeout(() => {
+      const botDivs = chat.querySelectorAll(".bot");
+      botDivs[botDivs.length - 1].textContent = getBotReply(message);
+      input.disabled = false;
+      input.focus();
+    }, 800);
+  }
+
+  function clearChat() {
+    chat.innerHTML = "";
+    input.focus();
+  }
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
+</script>
+
+</body>
+</html>
